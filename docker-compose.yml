@@ -1,0 +1,20 @@
+version: "3.7"
+
+services:
+
+    frontend:
+        build:
+          dockerfile: .docker/frontend/Dockerfile
+          context: .
+        container_name: palavras
+        entrypoint: /entrypoint.sh
+        tty: true
+        ports:
+            - "3000:3000"
+        volumes:
+            - "./frontend/:/home/node/app"
+        networks:
+            - palavras-network
+networks:
+    palavras-network:
+        driver: bridge
