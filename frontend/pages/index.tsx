@@ -4,6 +4,18 @@ import { useState } from "react";
 import Keyboard from "../components/Keyboard";
 import styles from "../styles/Home.module.css";
 
+const initialWordsState = (maxWordAttempt: number, wordLength: number) => {
+  const initialState = [];
+  for (let index = 0; index < maxWordAttempt; index++) {
+    const word = [];
+    for (let j = 0; j < wordLength; j++) {
+      word.push("");
+    }
+    initialState.push(word);
+  }
+  return initialState;
+};
+
 const Home: NextPage = () => {
   const [guessWordLetters, setGuessWordLetters] = useState<string[]>(
     "carro".split("")
@@ -11,29 +23,27 @@ const Home: NextPage = () => {
   const [wordLength, setWordLength] = useState<number>(5);
   const [maxWordAttempt, setMaxWordAttempt] = useState<number>(6);
   const [wordAttempt, setWordAttempt] = useState<number>(0);
-  const [posLetter, setPostLetter] = useState<number>(0);
+  const [posLetter, setPosLetter] = useState<number>(0);
 
-  const initialWordsState = [];
-  for (let index = 0; index < maxWordAttempt; index++) {
-    const word = [];
-    for (let j = 0; j < wordLength; j++) {
-      word.push("");
-    }
-    initialWordsState.push(word);
-  }
-  const [words, setWords] = useState<string[][]>(initialWordsState);
+  const [words, setWords] = useState<string[][]>(
+    initialWordsState(maxWordAttempt, wordLength)
+  );
+
+  const resetPosLetter = () => {
+    setPosLetter(0);
+  };
 
   const incrementPosLetter = () => {
     const newPos = posLetter + 1;
     if (newPos <= wordLength) {
-      setPostLetter(newPos);
+      setPosLetter(newPos);
     }
   };
 
   const decrementPosLetter = () => {
     const newPos = posLetter - 1;
     if (newPos >= 0) {
-      setPostLetter(newPos);
+      setPosLetter(newPos);
     }
   };
 
@@ -58,6 +68,11 @@ const Home: NextPage = () => {
     }
   };
 
+  const changeLastLetterPosition = (letter: string, index: number) => {
+    const newPosLetter = index;
+    setPosLetter(newPosLetter);
+  };
+
   const isValidWord = (word: string[]) => {
     return true;
   };
@@ -66,14 +81,19 @@ const Home: NextPage = () => {
     const newWordAttempt = wordAttempt + 1;
     if (newWordAttempt < maxWordAttempt) {
       setWordAttempt(newWordAttempt);
+      resetPosLetter();
     }
   };
 
   const checkWord = (letters: string[]) => {
-    const word = letters.join();
-    const guessWord = guessWordLetters.join();
-    if (word === guessWord) {
-    } else {
+    if (wordAttempt < maxWordAttempt) {
+      const word = letters.join();
+      const guessWord = guessWordLetters.join();
+      if (word === guessWord) {
+        return true;
+      } else {
+        return false;
+      }
     }
   };
 
@@ -85,6 +105,13 @@ const Home: NextPage = () => {
     }
     if (!isValidWord(currentWord)) {
       alert("Palavra não existe");
+      return false;
+    }
+
+    if (checkWord(currentWord)) {
+      alert("Parabens acertou a palavra");
+    } else {
+      incrementWordAttempt();
     }
   };
 
@@ -100,17 +127,30 @@ const Home: NextPage = () => {
         <h1 className={styles.title}>PALAVRAS</h1>
 
         {words.map((word, index) => {
-          const word_html = word.map((letter, index) => (
-            <p key={index} className={styles.card}>
-              {letter}
-            </p>
-          ));
+          const isCurrentWordAtempt = index === wordAttempt;
           return (
             <div key={index} className={styles.grid}>
-              {word_html}
+              {word.map((letter, index) => (
+                <p
+                  key={index}
+                  className={`${styles.card} ${
+                    posLetter === index && isCurrentWordAtempt
+                      ? styles.active
+                      : ""
+                  }`}
+                  onClick={() => {
+                    isCurrentWordAtempt
+                      ? changeLastLetterPosition(letter, index)
+                      : () => {};
+                  }}
+                >
+                  {letter.toUpperCase()}
+                </p>
+              ))}
             </div>
           );
         })}
+
         <Keyboard
           addLetter={addLetter}
           deleteLastLetter={deleteLastLetter}

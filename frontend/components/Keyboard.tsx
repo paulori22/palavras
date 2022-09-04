@@ -25,7 +25,7 @@ const Keyboard = ({
             data-key={keyLetter}
             onClick={() => handleClick(keyLetter)}
           >
-            {keyLetter}
+            {keyLetter.toUpperCase()}
           </button>
         ));
         return (
